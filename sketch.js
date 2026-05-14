@@ -5,19 +5,24 @@ let aguaTotalLitros = 0;
 let mostrarResultado = false;
 let gotas = [];
 let anguloOnda = 0; 
-let cnv; // Variável para guardar o nosso canvas (a tela do jogo)
 
 function setup() {
-  // Guardamos o canvas nessa variável 'cnv'
-  cnv = createCanvas(800, 600); 
+  // 1. Criamos a tela do jogo
+  let cnv = createCanvas(800, 600); 
 
-  // Pegamos a posição real do canvas na tela do navegador
-  let xCanvas = cnv.position().x;
-  let yCanvas = cnv.position().y;
+  // 2. Criamos uma "caixa invisível" para agrupar o fundo e os botões
+  let container = createDiv();
+  container.style('position', 'relative'); 
+  container.style('width', '800px');
+  container.style('height', '600px');
+  
+  // 3. Colocamos o nosso canvas (fundo do jogo) dentro dessa caixa
+  cnv.parent(container);
 
+  // 4. Criamos a caixa de peso e a prendemos na nossa caixa invisível
   inputPeso = createInput('');
-  // Somamos a posição do canvas (+ xCanvas) com a posição que queremos
-  inputPeso.position(xCanvas + width / 2 - 90, yCanvas + 160);
+  inputPeso.parent(container); // Isso é o que faz a mágica acontecer!
+  inputPeso.position(width / 2 - 90, 160);
   inputPeso.size(80, 30);
   inputPeso.style('font-size', '20px');
   inputPeso.style('text-align', 'center');
@@ -25,9 +30,10 @@ function setup() {
   inputPeso.style('border', '2px solid #00838F');
   inputPeso.style('outline', 'none');
 
+  // 5. Criamos o botão e o prendemos na nossa caixa invisível
   botaoCalcular = createButton('Calcular!');
-  // Somamos a posição do canvas (+ xCanvas) também para o botão
-  botaoCalcular.position(xCanvas + width / 2 + 10, yCanvas + 160); 
+  botaoCalcular.parent(container); // Isso é o que faz a mágica acontecer!
+  botaoCalcular.position(width / 2 + 10, 160); 
   botaoCalcular.size(100, 36);
   botaoCalcular.style('background-color', '#00ACC1');
   botaoCalcular.style('color', 'white');
@@ -40,17 +46,10 @@ function setup() {
   
   botaoCalcular.mousePressed(calcularAgua);
 
+  // Criando as gotas animadas
   for (let i = 0; i < 25; i++) {
     gotas.push(new Gota());
   }
-}
-
-// Essa função do p5.js garante que os botões não saiam do lugar se a tela mudar de tamanho!
-function windowResized() {
-  let xCanvas = cnv.position().x;
-  let yCanvas = cnv.position().y;
-  inputPeso.position(xCanvas + width / 2 - 90, yCanvas + 160);
-  botaoCalcular.position(xCanvas + width / 2 + 10, yCanvas + 160);
 }
 
 function calcularAgua() {
@@ -64,8 +63,10 @@ function calcularAgua() {
 }
 
 function draw() {
+  // Fundo em degradê
   setGradient(0, 0, width, height, color('#B2EBF2'), color('#00BCD4')); 
 
+  // Ondas animadas no fundo
   fill(255, 255, 255, 60); 
   noStroke();
   beginShape();
@@ -78,11 +79,13 @@ function draw() {
   endShape(CLOSE);
   anguloOnda += 0.03; 
 
+  // Desenhando as gotas
   for (let i = 0; i < gotas.length; i++) {
     gotas[i].cair();
     gotas[i].mostrar();
   }
 
+  // --- TEXTOS COM CONTORNO BRANCO PARA DESTAQUE ---
   textAlign(CENTER);
   
   stroke(255); 
@@ -103,6 +106,7 @@ function draw() {
   textStyle(BOLD);
   text('Peso (kg):', width / 2 - 165, 185); 
 
+  // Se o cálculo foi feito, exibe o resultado
   if (mostrarResultado) {
     strokeWeight(3);
     fill('#E65100');
@@ -122,6 +126,7 @@ function draw() {
     textStyle(BOLD);
     text('Sua meta é: ' + aguaTotalLitros + ' Litros por dia!', width / 2, 380);
 
+    // Desenhando os copos
     noStroke(); 
     let quantidadeCopos = Math.ceil(aguaTotalMl / 250);
     let limiteCopos = min(quantidadeCopos, 14); 
@@ -141,6 +146,10 @@ function draw() {
     text('(Cada copinho representa cerca de 250ml)', width / 2, 500);
   }
 }
+
+// --------------------------------------------------------
+// FUNÇÕES EXTRAS
+// --------------------------------------------------------
 
 function setGradient(x, y, w, h, c1, c2) {
   noFill();
